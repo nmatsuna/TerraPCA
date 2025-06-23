@@ -6,8 +6,10 @@ from astropy.io import fits
 
 #HOME_DIR='/mnt/SharedDisk/WINERED/telluric'
 HOME_DIR = '/home/nmatsuna/WINERED/telluric'
+CODE_DIR = f'{HOME_DIR}/code/'
+DATA_DIR = f'{HOME_DIR}/data/'
 
-TEL_LIST = HOME_DIR + '/tel_list'
+TEL_LIST = DATA_DIR + '/tel_list'
 
 orders_all = ['m42','m43','m44','m45','m46','m47','m48','m49','m50','m51','m52','m53','m54','m55','m56','m57','m58','m59','m60','m61']
 #orders = ['m43','m44','m45','m46','m47','m48','m52','m55','m56','m57','m58']
