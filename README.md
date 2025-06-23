@@ -71,3 +71,6 @@ Convert all FITS files listed in data/tel_list into 2-column text:
 ## Citation
     If this toolkit helps your research, please cite this GitHub repository.
 
+## Acknowledgements
+    I'm grateful to Hiroaki Sameshima for his suggestion to use the PCA approach for the WINERED telluric correction and following discussions. I also thank Daisuke Taniguchi for discussions on the algorithm and toolkit.
+
