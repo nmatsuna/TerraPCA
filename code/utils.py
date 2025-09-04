@@ -3,6 +3,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy.optimize import curve_fit
 from astropy.io import fits
+from scipy.interpolate import interp1d
 
 #HOME_DIR='/mnt/SharedDisk/WINERED/telluric'
 HOME_DIR = '/home/nmatsuna/WINERED/telluric'
@@ -187,5 +188,4 @@ def check_pixels_use(w_grid,w_obs,list_reject1=[],list_reject2=[],tel_abs=[]):
         if (reject1) or ((reject2) and (not telluric)):
             pixels_use[i]=False
     return np.array(pixels_use)
-
 

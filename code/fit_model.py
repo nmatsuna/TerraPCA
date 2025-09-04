@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
+from mask_from_obj import mask_from_obj
 import utils
 
 PLOT_DIR = 'fit_model'
@@ -78,8 +79,11 @@ parser.add_argument('-x','--xadjust',action='store_true',help='Adjust the wavele
 parser.add_argument('-c','--continuum_percentile',type=float,default=float(default_continuum_percentile),help='Percentile to determine the continuum level (1-99; default={default_continuum_percentile})')
 parser.add_argument('--reject1',type=str,default='',help=f'Parts of rejection 1')
 parser.add_argument('--reject2',type=str,default='',help=f'Parts of rejection 2 (not rejected if overlapped with pre-defined telluric)')
-parser.add_argument('--clip_limit',type=float,default=float(default_clip_limit),help=f'Limit of sigma-clip in the unit of sigma')
+parser.add_argument('--mask_obj',type=str,default='',help=f'Name of the text file of the predicted object spectrum giving the absorption of the target to mask')
+parser.add_argument('--obj_rv_add',type=float,default=0.,help=f'RV to add to the object model to calculate the masking wavelength ranges')
+parser.add_argument('--obj_thresh',type=float,default=0.95,help=f'Threshold in flux to detect the target absorption to mask (e.g. 0.95)')
 parser.add_argument('--clip_margin',type=float,default=float(default_clip_margin),help=f'Margin around a sigma-clip range')
+parser.add_argument('--clip_limit',type=float,default=float(default_clip_limit),help=f'Limit of sigma-clip in the unit of sigma')
 
 args = parser.parse_args()
 niter = args.niter
@@ -94,21 +98,46 @@ if args.xadjust:
     flag_xadjust = True
 else:
     flag_xadjust = False
+mask_obj = args.mask_obj
+obj_rv_add = args.obj_rv_add
+obj_thresh = args.obj_thresh
+clip_limit = args.clip_limit
+clip_margin = args.clip_margin
+continuum_percentile = args.continuum_percentile
+
+order = args.order
+if order not in orders:
+    print(f'Error: Unknown order {order}', file=sys.stderr)
+    parser.print_help()
+wrange = order_wranges[order]
+wmin_str, wmax_str = wrange.split(':')
+wmin, wmax=float(wmin_str), float(wmax_str)
+print(f'# order  = {order} ({wmin_str}:{wmax_str})', file=sys.stderr)
+
 list_reject1 = []
 if len(args.reject1)>0:
     for part in args.reject1.split(','):
         items = part.split(':')
         w0, w1 = float(items[0]), float(items[1])
         list_reject1.append([min([w0,w1]),max([w0,w1])])
+if mask_obj != '':
+    if not os.path.isfile(mask_obj):
+        print(f'Failed find mask_obj={mask_obj}')
+    else:
+        masked_ranges = mask_from_obj(mask_obj, rv_to_add=obj_rv_add, depth_thresh=obj_thresh, buffer_pix=3)
+        nmask = 0
+        for w0, w1 in masked_ranges:
+            if (not (wmin <= w0 <= wmax)) and (not (wmin <= w1 <= wmax)):
+                continue
+            list_reject1.append([min([w0,w1]),max([w0,w1])])
+            nmask += 1
+        print(f'mask_obj={mask_obj} - {nmask:d} parts to mask', file=sys.stderr)
 list_reject2 = []
 if len(args.reject2)>0:
     for part in args.reject2.split(','):
         items = part.split(':')
         w0, w1=float(items[0]), float(items[1])
         list_reject2.append([min([w0,w1]),max([w0,w1])])
-clip_limit = args.clip_limit
-clip_margin = args.clip_margin
-continuum_percentile = args.continuum_percentile
 
 file_in = str(args.file_in)
 if not os.path.isfile(file_in):
@@ -120,15 +149,6 @@ if extension_obs in ['.fits','.FITS']:
 else:
     type_in_fits = False
 print(f'# input  = {file_in} (fits={type_in_fits}, {vac_air})', file=sys.stderr)
-
-order = args.order
-if order not in orders:
-    print(f'Error: Unknown order {order}', file=sys.stderr)
-    parser.print_help()
-wrange = order_wranges[order]
-wmin_str, wmax_str = wrange.split(':')
-wmin, wmax=float(wmin_str), float(wmax_str)
-print(f'# order  = {order} ({wmin_str}:{wmax_str})', file=sys.stderr)
 
 file_out = args.file_out
 basename_out, extension_out = os.path.splitext(file_out)
@@ -263,12 +283,17 @@ if plot_out is not None:
         ymin = 0
     if ymax > flux_upper_limit:
         ymax = flux_upper_limit
-    fig = plt.figure(figsize=(12,6))
+    fig = plt.figure(figsize=(12,7))
     axs = {}
-    axs['sp'] = fig.add_axes([0.10,0.46,0.80,0.46])
-    axs['dev'] = fig.add_axes([0.10,0.10,0.80,0.30])
-    axs['sp'].plot(sp_obs[:,0],sp_obs[:,1],color='red',alpha=0.7,label='obs')
-    axs['sp'].plot(waves_part,sp_model_part,color='blue',alpha=0.7,label='model')
+    axs['sp'] = fig.add_axes([0.10,0.48,0.80,0.44])
+    axs['dev'] = fig.add_axes([0.10,0.10,0.80,0.32])
+    axs['sp'].plot(sp_obs[:,0],sp_obs[:,1],color='red',lw=1.25,alpha=0.7,label='obs')
+    axs['sp'].plot(waves_part,sp_model_part,color='blue',lw=1.25,alpha=0.7,label='model')
+    if (mask_obj != '') and (os.path.isfile(mask_obj)):
+        mask_obj_sp = np.loadtxt(mask_obj)
+        mask_obj_sp[:,0] *= 1.0+(obj_rv_add/300000.0)
+        axs['sp'].plot(mask_obj_sp[:,0],mask_obj_sp[:,1],lw=1.25,ls='dashed',color='limegreen',zorder=1)
+        axs['dev'].plot(mask_obj_sp[:,0],mask_obj_sp[:,1]-1,lw=1.25,ls='dashed',color='limegreen',zorder=10)
     for w0, w1 in tel_abs:
         axs['sp'].plot([w0,w1],[0.3*1+0.7*ymax,0.3*1+0.7*ymax],color='blue')
         axs['dev'].plot([w0,w1],[0.085,0.085],color='blue')
@@ -286,7 +311,8 @@ if plot_out is not None:
     axs['sp'].set_ylim([ymin,ymax])
     axs['sp'].set_ylabel('Normalized Flux')
     axs['sp'].set_title(f'{file_in} ({order}, {wrange})')
-    axs['dev'].plot(waves_part,sp_dev_part,zorder=1,color='gray')
+    axs['dev'].plot(waves_part,sp_model_part-1,lw=0.75,color='blue',zorder=2)
+    axs['dev'].plot(waves_part,sp_dev_part,zorder=3,lw=1.5,color='gray')
     axs['dev'].axhline(0.,ls='dotted',color='k',zorder=2)
     axs['dev'].axvline(wmin,ls='dotted',lw=0.7,color='k')
     axs['dev'].axvline(wmax,ls='dotted',lw=0.7,color='k')
