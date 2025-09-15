@@ -1,0 +1,12 @@
+python3 check_models.py m43 --vac_air vac
+python3 check_models.py m44 --vac_air vac
+python3 check_models.py m45 --vac_air vac
+python3 check_models.py m46 --vac_air vac
+python3 check_models.py m47 --vac_air vac
+python3 check_models.py m48 --vac_air vac
+python3 check_models.py m52 --vac_air vac
+python3 check_models.py m55 --vac_air vac
+python3 check_models.py m56 --vac_air vac
+python3 check_models.py m57 --vac_air vac
+python3 check_models.py m58 --vac_air vac
+python3 check_models.py m61 --vac_air vac

@@ -1,0 +1,12 @@
+python3 list_tel_abs.py WINERED_WIDE m43 0.9 
+python3 list_tel_abs.py WINERED_WIDE m44 0.9 
+python3 list_tel_abs.py WINERED_WIDE m45 0.95
+python3 list_tel_abs.py WINERED_WIDE m46 0.95
+python3 list_tel_abs.py WINERED_WIDE m47 0.9
+python3 list_tel_abs.py WINERED_WIDE m48 0.8
+python3 list_tel_abs.py WINERED_WIDE m52 0.95
+python3 list_tel_abs.py WINERED_WIDE m55 0.99
+python3 list_tel_abs.py WINERED_WIDE m56 0.99
+python3 list_tel_abs.py WINERED_WIDE m57 0.95
+python3 list_tel_abs.py WINERED_WIDE m58 0.9
+python3 list_tel_abs.py WINERED_WIDE m61 0.9
