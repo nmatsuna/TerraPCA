@@ -1,55 +1,74 @@
-import os
+#!/usr/bin/env python3
+"""
+Convert a 1D FITS spectrum into a 2-column text file (wavelength, flux).
+Optionally add the entire FITS header as comments, and/or plot the spectrum.
+"""
+
+import os, sys, argparse
 import numpy as np
-import astropy.io.fits as fits
+import matplotlib.pyplot as plt
+from astropy.io import fits
 
-import utils
-DATA_DIR = utils.DATA_DIR
-TEL_LIST = utils.TEL_LIST
+# -------------------------------
+# Argument parsing
+# -------------------------------
+parser = argparse.ArgumentParser(description="Convert 1D FITS spectrum to 2-column text")
+parser.add_argument("input_fits", help="Input FITS file")
+parser.add_argument("output_txt", help="Output text file (wavelength flux)")
+parser.add_argument("--plot", action="store_true", help="Show spectrum plot")
+parser.add_argument("--write_header", action="store_true",
+                    help="Write the full FITS header as comments in the text file")
+args = parser.parse_args()
 
-orders=['m42','m43','m44','m45','m46','m47','m48','m52','m53','m54','m55','m56','m57','m58','m60','m61']
-#orders=['m42','m43','m44','m45','m46','m47','m48','m49','m50','m51','m52','m53','m54','m55','m56','m57','m58','m59','m60','m61']
+# -------------------------------
+# Load FITS spectrum
+# -------------------------------
+if not os.path.isfile(args.input_fits):
+    print(f"[ERROR] {args.input_fits} not found", file=sys.stderr)
+    sys.exit(1)
 
-fh=open(TEL_LIST)
-for line in fh.readlines():
-    if line.startswith('#'):
-        continue
-    run, label, obj, date=line.split()
-    if not os.path.isdir(f'{DATA_DIR}/{run}/{label}'):
-        print(f'Failed to find the directory {DATA_DIR}/{run}/{label}')
-        print(f'Please check the necessary data sets')
-        exit(1)
-    out_dir=f'{DATA_DIR}/{run}/{label}/txt'
-    # Ensure output directory exists
-    os.makedirs(out_dir, exist_ok=True)
-    if run in ['NTT17a']:
-        fits_dir=f'{DATA_DIR}/{run}/{label}/telluric/FITS/cut5'
-    elif run in ['NTT17b']:
-        fits_dir=f'{DATA_DIR}/{run}/{label}/telluric/FITS/cut1'
-    elif run in ['LCO23a']:
-        fits_dir=f'{DATA_DIR}/{run}/{label}/telluric/FITS/nocut'
-    else:
-        fits_dir=f'{DATA_DIR}/{run}/{label}/telluric/FITS/fsr1.30'
-    if not os.path.isdir(fits_dir):
-        print(f'{fits_dir} does not exist!')
-        continue
-    for order in orders:
-        fitsname=f'{fits_dir}/telluric_{order}.fits'
-        if not os.path.isfile(fitsname):
-            print(f'Failed find the fits (order={order}) for {run}/{label} (fits_dir={fits_dir}')
-            continue
-        print(f'{run} {label:13s} {order}')
-        hdulist=fits.open(fitsname)
-        flux=hdulist[0].data
-        header=hdulist[0].header
-        crval1=header['CRVAL1']
-        crpix1=header['CRPIX1']
-        cdelt1=header['CDELT1']
-        num_pixels=len(flux)
-        pixel_values=np.arange(1,num_pixels+1)
-        wave=crval1+(pixel_values-crpix1)*cdelt1
-        output=f'{out_dir}/{order}.txt'
-        fout=open(output,'w')
-        for w, f in zip(wave,flux):
-            print(f'{w:<12.6f} {f:9.6f}',file=fout)
-        fout.close()
-fh.close()
+hdul = fits.open(args.input_fits)
+flux = hdul[0].data
+header = hdul[0].header
+hdul.close()
+
+if flux.ndim != 1:
+    print("[ERROR] This script only supports 1D spectra.", file=sys.stderr)
+    sys.exit(1)
+
+crval1 = header.get('CRVAL1')
+crpix1 = header.get('CRPIX1', 1.0)
+cdelt1 = header.get('CDELT1')
+
+if (crval1 is None) or (cdelt1 is None):
+    print("[ERROR] FITS header missing CRVAL1 or CDELT1 keywords.", file=sys.stderr)
+    sys.exit(1)
+
+num_pix = len(flux)
+pixels = np.arange(1, num_pix+1)
+waves = crval1 + (pixels - crpix1) * cdelt1
+
+# -------------------------------
+# Save as 2-column text
+# -------------------------------
+with open(args.output_txt, 'w') as fout:
+    fout.write(f"# {args.input_fits}")
+    if args.write_header:
+        for card in header.cards:
+            fout.write(f"# {card.keyword} = {card.value} / {card.comment}\n")
+    for w, f in zip(waves, flux):
+        fout.write(f"{w:14.6f} {f:12.6f}\n")
+
+print(f"[INFO] Wrote {num_pix} points to {args.output_txt}", file=sys.stderr)
+
+# -------------------------------
+# Optional plot
+# -------------------------------
+if args.plot:
+    plt.figure(figsize=(8,4))
+    plt.plot(waves, flux, lw=1, color='black')
+    plt.xlabel("Wavelength")
+    plt.ylabel("Flux")
+    plt.title(os.path.basename(args.input_fits))
+    plt.tight_layout()
+    plt.show()

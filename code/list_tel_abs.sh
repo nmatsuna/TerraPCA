@@ -1,12 +1,12 @@
-python3 list_tel_abs.py WINERED_WIDE m43 0.9 
-python3 list_tel_abs.py WINERED_WIDE m44 0.9 
-python3 list_tel_abs.py WINERED_WIDE m45 0.95
-python3 list_tel_abs.py WINERED_WIDE m46 0.95
-python3 list_tel_abs.py WINERED_WIDE m47 0.9
-python3 list_tel_abs.py WINERED_WIDE m48 0.8
-python3 list_tel_abs.py WINERED_WIDE m52 0.95
-python3 list_tel_abs.py WINERED_WIDE m55 0.99
-python3 list_tel_abs.py WINERED_WIDE m56 0.99
-python3 list_tel_abs.py WINERED_WIDE m57 0.95
-python3 list_tel_abs.py WINERED_WIDE m58 0.9
-python3 list_tel_abs.py WINERED_WIDE m61 0.9
+python3 list_tel_abs.py m43 --setting WINERED_WIDE --flux_thresh 0.9 
+python3 list_tel_abs.py m44 --setting WINERED_WIDE --flux_thresh 0.9 
+python3 list_tel_abs.py m45 --setting WINERED_WIDE --flux_thresh 0.95
+python3 list_tel_abs.py m46 --setting WINERED_WIDE --flux_thresh 0.95
+python3 list_tel_abs.py m47 --setting WINERED_WIDE --flux_thresh 0.9
+python3 list_tel_abs.py m48 --setting WINERED_WIDE --flux_thresh 0.8
+python3 list_tel_abs.py m52 --setting WINERED_WIDE --flux_thresh 0.95
+python3 list_tel_abs.py m55 --setting WINERED_WIDE --flux_thresh 0.99
+python3 list_tel_abs.py m56 --setting WINERED_WIDE --flux_thresh 0.99
+python3 list_tel_abs.py m57 --setting WINERED_WIDE --flux_thresh 0.95
+python3 list_tel_abs.py m58 --setting WINERED_WIDE --flux_thresh 0.9
+python3 list_tel_abs.py m61 --setting WINERED_WIDE --flux_thresh 0.95

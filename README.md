@@ -69,8 +69,8 @@ The PNG shows:
 ## Script overview
 
 ### Basic utilities
-    fits_to_txt.py              Convert WINERED FITS spectra to plain-text (λ flux)
-    mask_from_spectrum.py       Detect and return wavelength ranges to mask based on flux threshold
+    fits_to_txt.py               Convert WINERED FITS spectra to plain-text (λ flux)
+    mask_from_spectrum.py        Detect and return wavelength ranges to mask based on flux threshold
     calc_sp_offset.py            Estimate RV/flux offset by residual minimization between spectra
     crosscorr_sp_offset.py       Estimate RV offset using normalized cross-correlation
 

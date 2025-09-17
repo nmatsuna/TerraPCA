@@ -40,6 +40,7 @@ else:
     exit()
 
 # Decide which orders to analyze
+setting_orders = utils.load_setting(args.setting)
 if args.orders.strip() == "":
     target_orders = list(setting_orders.keys())
 else:
@@ -163,7 +164,7 @@ for order, oconf in setting_orders.items():
     norm_factor = 1/np.sum(Lp)
     Ep = eigvecs[:, :n_base] # (n_sp, n_base)
     A = X.T @ Ep # (n_pix, n_base) = basis_vectors
-    # Align signs of basis vectors so absorption is downward
+    # Align signs of basis vectors so major absorption components are downward
     for i in range(n_base):
         if np.mean(A[:,i]) > np.median(A[:,i]):
             A[:,i] *= -1
@@ -198,6 +199,7 @@ for order, oconf in setting_orders.items():
         ax.set_title(f"{setting} - eigenvalues for {order}")
         ax.set_xlabel('Component index')
         ax.set_ylabel('Eigenvalue')
+        fig.tight_layout()
         fig.savefig(f"{PLOT_DIR}/eigenvalues_{order}.png", dpi=150)
         plt.close(fig)
 
@@ -209,15 +211,16 @@ for order, oconf in setting_orders.items():
                 sp_abs = normalize_abs(norm_factor*Lp[i]*A[:,i],unity_level='upper')
             else:
                 sp_abs = normalize_abs(norm_factor*Lp[i]*A[:,i],unity_level='mean')
-            ax.plot(waves,sp_abs+0.05*i,color=cmap(Normalize(vmin=0, vmax=n_base)(i)),zorder=i)
+            ax.plot(waves,sp_abs+0.05*(i+1),color=cmap(Normalize(vmin=0, vmax=n_base)(i)),zorder=i)
             #ax.plot(waves,(2**i*(sp_abs-1))+1+0.05*i,color=cmap(Normalize(vmin=0, vmax=n_base)(i)),zorder=i)
-        ax.plot(waves, sp_mean, color='k', lw=1, label='Average', zorder=n_base+1)
+        ax.plot(waves, sp_mean, color='deepskyblue', lw=1, label='Average', zorder=n_base+1)
         #ax.plot(waves, sp_ave, color='deepskyblue', lw=0.7, label='PCA-fit', zorder=n_base+2)
         ax.axvline(wmin, ls='dotted', lw=0.5, color='k')
         ax.axvline(wmax, ls='dotted', lw=0.5, color='k')
         ax.set_xlabel(f'{vac_air} wavelength')
         ax.set_ylabel('flux')
-        ax.legend()
+        ax.legend(loc='lower right')
         ax.set_title(f"{setting} - basis spectra for order {order}")
+        fig.tight_layout()
         fig.savefig(f"{PLOT_DIR}/eigenvectors_{order}.png", dpi=200)
         plt.close(fig)

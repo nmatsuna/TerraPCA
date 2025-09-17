@@ -53,7 +53,7 @@ def parse_ranges_string(s):
         return ranges
     for part in s.split(','):
         w0, w1 = map(float, part.split(':'))
-        ranges.append((w0, w1))
+        ranges.append([w0, w1])
     return ranges
 
 def merge_ranges(regions):
@@ -71,34 +71,33 @@ def merge_ranges(regions):
     merged = []
     for current_start, current_end in regions:
         if not merged:
-            merged.append((current_start, current_end))
+            merged.append([current_start, current_end])
         else:
             last_start, last_end = merged[-1]
             if current_start <= last_end:
                 # Overlap or adjacent -> merge
-                merged[-1] = (last_start, max(last_end, current_end))
+                merged[-1] = [last_start, max(last_end, current_end)]
             else:
-                merged.append((current_start, current_end))
+                merged.append([current_start, current_end])
     return merged
 
 def combine_use_and_reject(list_use, list_reject):
     """Return regions in list_use that are not in list_reject."""
-    if not list_use:
+    if len(list_use)<=0:
         return []
-
     final = []
     for u_start, u_end in list_use:
         cur_start = u_start
-        for r_start, r_end in sorted(list_reject):
+        for r_start, r_end in sorted(list(list_reject)):
             if r_end <= cur_start:
                 continue
             if r_start >= u_end:
                 break
             if r_start > cur_start:
-                final.append((cur_start, min(r_start, u_end)))
+                final.append([cur_start, min(r_start, u_end)])
             cur_start = max(cur_start, r_end)
         if cur_start < u_end:
-            final.append((cur_start, u_end))
+            final.append([cur_start, u_end])
     return final
 
 def apply_use_and_reject_ranges(sp, rv=0., use_ranges=[], reject_ranges=[]):
