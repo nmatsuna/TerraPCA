@@ -46,7 +46,7 @@ else:
             print(f"[ERROR] order={o} is not defined in setting_{args.setting}.txt", file=sys.stderr)
             sys.exit(1)
 
-print(f"# Measuring telluric offsets for {len(target_orders)} orders in {args.setting} ({vac_air})", file=sys.stderr)
+print(f"# Measuring telluric offsets for {len(target_orders)} orders in {args.setting} ({vac_air})")
 print(f"# File pattern: {args.pattern}")
 print("# o    v[km/s]  n_pix  file", flush=True)
 

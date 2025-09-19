@@ -182,12 +182,12 @@ if args.trim_edge:
 # Optional xadjust
 rv_used = 0.0
 if args.xadjust:
-    xadj, yadj, n_used = calc_sp_offset(sp_obs, sp_ave, use_ranges=[tuple(x) for x in tel_abs], list_v=np.arange(-15,15,0.5), frange=(fmin,fmax))
-    sp_obs[:,0] *= (1.0+xadj/c_kms)
-    #sp_obs[:,1] += yadj
-    rv_used = xadj
+    xoff, yoff, n_used = calc_sp_offset(sp_obs, sp_ave, use_ranges=[tuple(x) for x in tel_abs], list_v=np.arange(-15,15,0.5), frange=(fmin,fmax))
+    sp_obs[:,0] *= (1.0-xoff/c_kms)
+    sp_obs[:,1] += yoff
+    rv_used = xoff
     if args.verbose:
-        print(f"   xadjust={xadj:.2f} km/s, n_used={n_used}", file=sys.stderr)
+        print(f"   xoff={xoff:.2f} km/s, n_used={n_used}", file=sys.stderr)
 
 func_obs = CubicSpline(sp_obs[:,0], sp_obs[:,1])
 

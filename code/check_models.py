@@ -63,9 +63,9 @@ for f in files:
 
     # Adjust wavelength and flux to match average model
     if not args.no_align:
-        xadj, yadj, *_ = calc_sp_offset(sp_obs, sp_ave, list_v=np.arange(-12,12,0.2))
-        sp_obs[:,0] *= (1.0 + xadj/utils.c_kms)
-        sp_obs[:,1] += yadj
+        xoff, yoff, *_ = calc_sp_offset(sp_obs, sp_ave, list_v=np.arange(-15,15,0.2))
+        sp_obs[:,0] *= (1.0 - xoff/utils.c_kms)
+        sp_obs[:,1] -= yoff
     func_obs = CubicSpline(sp_obs[:,0], sp_obs[:,1])
 
     # Mask to overlap pixels
@@ -94,7 +94,7 @@ for f in files:
     if args.no_align:
         print(f"{fname:30s}  sigma={sigma:.4f} ({pixels_use.sum()} px)")
     else:
-        print(f"{fname:30s}  sigma={sigma:.4f} ({pixels_use.sum()} px, xadj={xadj:.1f} km/s)")
+        print(f"{fname:30s}  sigma={sigma:.4f} ({pixels_use.sum()} px, xoff={xoff:.1f} km/s)")
 
     # ---------------------------------------------
     # Plot Observed vs Model Spectrum

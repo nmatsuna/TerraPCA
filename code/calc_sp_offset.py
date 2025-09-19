@@ -14,9 +14,9 @@ def calc_sp_offset(sp_obj, sp_ref,
     """
     Estimate wavelength and continuum offset between two spectra
     Returns offsets in wavelength (given by redshift in km/s) and flux,
-            which can be added to sp_obj in the following analysis).
+            which should be subtracted to sp_obj in the following analysis).
     """
-    xadj, yadj, chi2_min, n_used = np.nan, np.nan, np.nan, 0
+    xoff, yoff, chi2_min, n_used = np.nan, np.nan, np.nan, 0
     wmin = np.max([np.min(sp_obj[:,0]), np.min(sp_ref[:,0])])
     wmax = np.min([np.max(sp_obj[:,0]), np.max(sp_ref[:,0])])
     func_ref = CubicSpline(sp_ref[:, 0], sp_ref[:, 1])
@@ -33,21 +33,21 @@ def calc_sp_offset(sp_obj, sp_ref,
         if np.isnan(chi2_min) or (std < chi2_min):
             chi2_min = std
             n_used = len(residuals)
-            xadj = v
-            yadj = -np.median(residuals)
-    return xadj, yadj, n_used
+            xoff = -v
+            yoff = np.median(residuals)
+    return xoff, yoff, n_used
 
-def plot_comparison(sp_obj, sp_ref, used_ranges, xadj, yadj, plot_out):
+def plot_comparison(sp_obj, sp_ref, used_ranges, xoff, yoff, plot_out):
     """Plot redshifted and flux-shifted object spectrum over reference."""
-    rv_factor = 1 + xadj / c_kms
+    rv_factor = 1 - xoff / c_kms
     sp_obj_plot = np.copy(sp_obj)
     sp_obj_plot[:, 0] *= rv_factor
-    sp_obj_plot[:, 1] += yadj
+    sp_obj_plot[:, 1] -= yoff
 
     fig = plt.figure(figsize=(9, 4))
     ax = fig.add_subplot(111)
     ax.plot(sp_ref[:, 0], sp_ref[:, 1], color='black', lw=1.2, label='Ref')
-    ax.plot(sp_obj_plot[:, 0], sp_obj_plot[:, 1], color='red', lw=1.0, alpha=0.7, label=f'Obj ({xadj:.3f} km/s shifted)')
+    ax.plot(sp_obj_plot[:, 0], sp_obj_plot[:, 1], color='red', lw=1.0, alpha=0.7, label=f'Obj ({xoff:.3f} km/s shifted)')
     for w0, w1 in used_ranges:
         ax.axvspan(w0, w1, ymin=0.96, ymax=0.98, color='blue', alpha=0.25)
     ax.set_xlabel("Wavelength")
@@ -88,9 +88,9 @@ if __name__ == "__main__":
         use_ranges = parse_ranges_string(args.use_ranges)
     used_ranges = combine_use_and_reject(use_ranges, reject_ranges)
 
-    xadj, yadj, n_used = calc_sp_offset(sp_obs[:,0:2], sp_ref[:,0:2], list_v=list_v, frange=frange, use_ranges=use_ranges, reject_ranges=reject_ranges)
+    xoff, yoff, n_used = calc_sp_offset(sp_obs[:,0:2], sp_ref[:,0:2], list_v=list_v, frange=frange, use_ranges=use_ranges, reject_ranges=reject_ranges)
                                      
-    print(f"{xadj:.3f} {yadj:.4f} {n_used:d}")
+    print(f"{xoff:.3f} {yoff:.4f} {n_used:d}")
 
     if args.plot_out != "NONE":
-        plot_comparison(sp_obs[:, 0:2], sp_ref[:, 0:2], used_ranges, xadj, yadj, args.plot_out)
+        plot_comparison(sp_obs[:, 0:2], sp_ref[:, 0:2], used_ranges, xoff, yoff, args.plot_out)

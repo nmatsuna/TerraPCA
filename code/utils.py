@@ -106,7 +106,7 @@ def apply_use_and_reject_ranges(sp, rv=0., use_ranges=[], reject_ranges=[]):
 
     Parameters:
         sp (np.ndarray): Input spectrum as an Nx2 array [(wavelength, flux), ...]
-        rv (float): RV in km/s. The function checks if the wavelength after the redshift is within the ranges.
+        rv (float): RV in km/s. The function checks if the wavelength after subtracting the redshift is within the ranges.
         use_ranges (list of tuples): List of (wmin, wmax) to keep. If None or empty, no cut.
         reject_ranges (list of tuples): List of (wmin, wmax) to exclude. If None or empty, no mask.
 
@@ -117,8 +117,7 @@ def apply_use_and_reject_ranges(sp, rv=0., use_ranges=[], reject_ranges=[]):
         use_ranges = use_ranges.tolist()
     if isinstance(reject_ranges, np.ndarray):
         reject_ranges = reject_ranges.tolist()
-    wave = sp[:, 0] * (1.0 + rv/c_kms)
-    flux = sp[:, 1]
+    wave = sp[:, 0] * (1.0 - rv/c_kms)
     mask = np.ones(len(wave), dtype=bool)
     if len(use_ranges) > 0:
         use_mask = np.zeros(len(wave), dtype=bool)
@@ -128,7 +127,7 @@ def apply_use_and_reject_ranges(sp, rv=0., use_ranges=[], reject_ranges=[]):
     if len(reject_ranges) > 0:
         for w0, w1 in reject_ranges:
             mask &= ~((wave >= w0) & (wave <= w1))
-    return np.column_stack((wave[mask], flux[mask]))
+    return np.column_stack((sp[:,0][mask], sp[:,1][mask]))
 
 def list_telluric_files(setting_label, order):
     """
@@ -150,6 +149,7 @@ def list_telluric_files(setting_label, order):
                    glob.glob(os.path.join(base_dir, "*.FITS")))
     return files
 
+# if voff or yoff is given, it will be subtracted.
 def load_sp(file_in, voff=np.nan, yoff=np.nan, wrange=None, frange=None):
     base_name, extension = os.path.splitext(file_in)
     if extension in ['.fits','.FITS']:
@@ -163,9 +163,9 @@ def load_sp_txt(file_in, wrange=None, frange=None, voff=np.nan, yoff=np.nan):
         return None
     sp = np.loadtxt(file_in)
     if not np.isnan(voff):
-        sp[:,0] *= (1.+voff/c_kms)
+        sp[:,0] *= (1.-voff/c_kms)
     if not np.isnan(yoff):
-        sp[:,1] += yoff
+        sp[:,1] -= yoff
     if (wrange is None) and (frange is None):
         return sp[:, 0:2]
     wmin, wmax, fmin, fmax = 0,100000, -99999, 99999
@@ -194,9 +194,9 @@ def load_sp_fits(file_in, voff=np.nan, yoff=np.nan):
     wave = crval1+(pixel_values-crpix1)*cdelt1
     sp = np.column_stack([wave,flux])
     if not np.isnan(voff):
-        sp[:,0] *= (1.+voff/c_kms)
+        sp[:,0] *= (1.-voff/c_kms)
     if not np.isnan(yoff):
-        sp[:,1] += yoff
+        sp[:,1] -= yoff
     hdul.close()
     return sp, header
 

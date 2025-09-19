@@ -13,7 +13,7 @@ from calc_sp_offset import calc_sp_offset
 import utils
 num_standard_min = utils.num_standard_min
 c_kms = utils.c_kms
-xadj_max = 5
+xoff_alert = 10
 
 # ------------------------------------------
 # Parse arguments
@@ -119,14 +119,14 @@ for order, oconf in setting_orders.items():
             continue
 
         if (not args.no_align) and (sp_mean is not None):
-            xadj, yadj, *_ = calc_sp_offset(sp, np.column_stack((waves,sp_mean)), list_v=np.arange(-8,8,0.2))
-            if abs(xadj) > xadj_max:
-                print(f"  {os.path.basename(f)}: xadj={xadj:.1f}km/s - too large!", file=sys.stderr)
+            xoff, yoff, *_ = calc_sp_offset(sp, np.column_stack((waves,sp_mean)), list_v=np.arange(-15,15,0.2))
+            if abs(xoff) > xoff_alert:
+                print(f"  {os.path.basename(f)}: xoff={xoff:.1f}km/s - too large!", file=sys.stderr)
                 continue
-            sp[:,0] *= (1.+xadj/c_kms)
-            sp[:,1] += yadj
+            sp[:,0] *= (1.-xoff/c_kms)
+            sp[:,1] += yoff
             if args.verbose:
-                print(f"  {os.path.basename(f)}: xadj={xadj:.1f}km/s yadj={yadj:.3f}", file=sys.stderr)
+                print(f"  {os.path.basename(f)}: xoff={xoff:.1f}km/s yoff={yoff:.3f}", file=sys.stderr)
 
         interp_cur = CubicSpline(sp[:,0], sp[:,1])
         sp_new = interp_cur(waves)
