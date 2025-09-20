@@ -105,4 +105,5 @@ If this toolkit helps your research, please cite this GitHub repository.
 ## Acknowledgements
 I'm grateful to Hiroaki Sameshima for his suggestion to use the PCA approach for
 the WINERED telluric correction and following discussions. I also thank Daisuke
-Taniguchi for discussions on the algorithm and toolkit.
+Taniguchi for discussions on the algorithm and toolkit. The WINERED HIRES-Y band
+data of telluric standard stars are kindly provided by Emily Pass (MIT).
