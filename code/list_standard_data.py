@@ -44,6 +44,7 @@ def main():
                 sys.exit(1)
 
     print(f"# Setting: {args.setting}")
+    print(target_orders)
     for order, oconf in setting_orders.items():
         if order not in target_orders:
             continue

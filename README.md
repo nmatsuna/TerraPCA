@@ -73,6 +73,7 @@ The PNG shows:
     mask_from_spectrum.py        Detect and return wavelength ranges to mask based on flux threshold
     calc_sp_offset.py            Estimate RV/flux offset by residual minimization between spectra
     crosscorr_sp_offset.py       Estimate RV offset using normalized cross-correlation
+    trace_continuum.py           Trace the smooth continuum of a 1D spectrum
 
 ### Model construction and validation
     build_models.py              Build order-by-order PCA basis; saves base_*, ave_*, waves_*

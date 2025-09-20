@@ -77,13 +77,14 @@ if __name__ == "__main__":
 
     sp_obs = np.loadtxt(args.file_obs)
     sp_ref = np.loadtxt(args.file_ref)
+    wmin_obs, wmax_obs = np.min(sp_obs[:,0]), np.max(sp_obs[:,0])
     wmin_ref, wmax_ref = np.min(sp_ref[:,0]), np.max(sp_ref[:,0])
     list_v = np.arange(args.vmin, args.vmax + args.vstep, args.vstep)
     frange = (args.fmin, args.fmax)
 
     reject_ranges = parse_ranges_string(args.reject_ranges)
     if args.use_ranges.strip() == "":
-        use_ranges = [(wmin_ref, wmax_ref)]
+        use_ranges = [(np.max([wmin_obs,wmin_ref]), np.min([wmax_obs,wmax_ref]))]
     else:
         use_ranges = parse_ranges_string(args.use_ranges)
     used_ranges = combine_use_and_reject(use_ranges, reject_ranges)
