@@ -14,10 +14,10 @@ reproduce the WINERED telluric profile to < 1 % RMS per pixel across multiple or
 ---
 
 ## Repository structure
-data/{setting_label}/{order}/        telluric standard spectra (*.fits / *.txt)
-settings/setting_{label}.txt          configuration files (orders, ranges, n_pix, n_base)
-models_txt/{setting_label}/           PCA model outputs (waves_*, base_*, ave_*, tel_abs_*)
-models_plot/{setting_label}/           diagnostic plots from model building
+    data/{setting_label}/{order}/        telluric standard spectra (*.fits / *.txt)
+    settings/setting_{label}.txt          configuration files (orders, ranges, n_pix, n_base)
+    models_txt/{setting_label}/           PCA model outputs (waves_*, base_*, ave_*, tel_abs_*)
+    models_plot/{setting_label}/           diagnostic plots from model building
 
 ---
 
@@ -31,8 +31,8 @@ models_plot/{setting_label}/           diagnostic plots from model building
 ### 1. Prepare spectra (once)
 Put 2-column text or FITS spectra of telluric standards in:
     data/{setting_label}/{order}/
-You can convert WINERED FITS to text as:
-    python3 fits_to_txt.py
+To check available spectra to use:
+    python3 list_standard_data.py
 
 ### 2. Build PCA basis (once)
     python3 build_models.py --vac_air vac -s WINERED_WIDE
@@ -87,15 +87,21 @@ The PNG shows:
 ---
 
 ## Adapting to other instruments
-1. Create `settings/setting_{LABEL}.txt`:
+a. Create `settings/setting_{LABEL}.txt` for the data set:
        m43 12870 13210 3072 6
        m44 12570 12930 3072 6
        ...
    (order wmin wmax n_pix n_base)
 
-2. Place telluric standard spectra in:
+b. Place telluric standard spectra in:
        data/{LABEL}/{order}/
-3. Run steps 2–3 to build PCA basis and tel_abs ranges.
+
+c. LABEL should be consistent throughout the analysis, and create the following directories.
+       models_txt/{LABEL}/
+       models_plot/{LABEL}/
+       check_models/{LABEL}/{order}/
+
+d. Run steps 1-4, listed above, to build PCA basis and tel_abs ranges.
 
 ---
 
